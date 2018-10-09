@@ -1,0 +1,3 @@
+Manifest-Version: 1.0
+Class-Path: ./lib/gson-2.7.jar lib/jmdns-3.5.3.jar lib/json-20180130.jar lib/mesh-ota.jar lib/meshforjava.jar lib/reactive-streams-1.0.2.jar lib/rxjava-2.1.8.jar lib/slf4j-api-1.7.16.jar lib/slf4j-simple-1.7.16.jar
+Main-Class: main.MainOta
