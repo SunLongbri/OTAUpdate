@@ -1,31 +1,28 @@
 package sl.heaven.ota.client;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.List;
 
 public class HttpRequestUtil {
 
 	/**
 	 * 
-	 * ÏòÖ¸¶¨URL·¢ËÍGET·½·¨µÄÇëÇó
+	 * ï¿½ï¿½Ö¸ï¿½ï¿½URLï¿½ï¿½ï¿½ï¿½GETï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	 * 
-	 * ÇëÇó²ÎÊı£¬ÇëÇó²ÎÊıÓ¦¸ÃÊÇ name1=value1&name2=value2 µÄĞÎÊ½¡£
+	 * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ name1=value1&name2=value2 ï¿½ï¿½ï¿½ï¿½Ê½ï¿½ï¿½
 	 * 
 	 * @param url
 	 * 
-	 *            ·¢ËÍÇëÇóµÄURL
+	 *            ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½URL
 	 * 
-	 * @return URL Ëù´ú±íÔ¶³Ì×ÊÔ´µÄÏìÓ¦½á¹û
+	 * @return URL ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½Ô´ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½
 	 */
 
 	public static String sendGet(String url) {
@@ -33,22 +30,22 @@ public class HttpRequestUtil {
 		BufferedReader in = null;
 		try {
 			URL realUrl = new URL(url);
-			// ´ò¿ªºÍURLÖ®¼äµÄÁ¬½Ó
+			// ï¿½ò¿ªºï¿½URLÖ®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			URLConnection connection = realUrl.openConnection();
-			// ÉèÖÃÍ¨ÓÃµÄÇëÇóÊôĞÔ
+			// ï¿½ï¿½ï¿½ï¿½Í¨ï¿½Ãµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			connection.setRequestProperty("accept", "*/*");
 			connection.setRequestProperty("connection", "Keep-Alive");
 			connection.setRequestProperty("user-agent",
 					"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
 			connection.setRequestProperty("Accept-Charset", "UTF-8");
 			connection.setRequestProperty("contentType", "UTF-8");
-			// ½¨Á¢Êµ¼ÊµÄÁ¬½Ó
+			// ï¿½ï¿½ï¿½ï¿½Êµï¿½Êµï¿½ï¿½ï¿½ï¿½ï¿½
 			connection.connect();
-			// ±éÀúËùÓĞµÄÏìÓ¦Í·×Ö¶Î
+			// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğµï¿½ï¿½ï¿½Ó¦Í·ï¿½Ö¶ï¿½
 			// for (String key : map.keySet()) {
 			// System.out.println(key + "--->" + map.get(key));
 			// }
-			// ¶¨Òå BufferedReaderÊäÈëÁ÷À´¶ÁÈ¡URLµÄÏìÓ¦
+			// ï¿½ï¿½ï¿½ï¿½ BufferedReaderï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡URLï¿½ï¿½ï¿½ï¿½Ó¦
 			in = new BufferedReader(new InputStreamReader(
 					connection.getInputStream(), "utf-8"));
 			String line;
@@ -57,13 +54,13 @@ public class HttpRequestUtil {
 			}
 
 		} catch (Exception e) {
-			// System.out.println("·¢ËÍGETÇëÇó³öÏÖÒì³££¡" + e);
+			// System.out.println("ï¿½ï¿½ï¿½ï¿½GETï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ì³£ï¿½ï¿½" + e);
 			result = new StringBuilder(
 					"{\"resCode\":\"1\",\"errCode\":\"1001\",\"resData\":\"\"}");
 			e.printStackTrace();
-			System.out.println("Ô¶³Ì·şÎñÎ´¿ªÆô!");
+			System.out.println("Ô¶ï¿½Ì·ï¿½ï¿½ï¿½Î´ï¿½ï¿½ï¿½ï¿½!");
 		}
-		// Ê¹ÓÃfinally¿éÀ´¹Ø±ÕÊäÈëÁ÷
+		// Ê¹ï¿½ï¿½finallyï¿½ï¿½ï¿½ï¿½ï¿½Ø±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		finally {
 			try {
 				if (in != null) {
@@ -85,9 +82,9 @@ public class HttpRequestUtil {
 		URL realUrl;
 		try {
 			realUrl = new URL(url);
-			// ´ò¿ªºÍURLÖ®¼äµÄÁ¬½Ó
+
 			conn = (HttpURLConnection) realUrl.openConnection();
-			// ÉèÖÃÍ¨ÓÃµÄÇëÇóÊôĞÔ
+
 			conn.setRequestProperty("accept", "*/*");
 			conn.setRequestProperty("connection", "Keep-Alive");
 			conn.setRequestProperty("user-agent",
@@ -95,11 +92,10 @@ public class HttpRequestUtil {
 			conn.setRequestProperty("Accept-Charset", "UTF-8");
 			conn.setRequestProperty("contentType", "UTF-8");
 			conn.setRequestMethod("POST");
-			
-			// ·¢ËÍPOSTÇëÇó±ØĞëÉèÖÃÈçÏÂÁ½ĞĞ
+
 			conn.setDoOutput(true);
 			conn.setDoInput(true);
-			// »ñÈ¡URLConnection¶ÔÏó¶ÔÓ¦µÄÊä³öÁ÷
+
 			//out = new PrintWriter(conn.getOutputStream());
 			out=conn.getOutputStream();
 		
@@ -114,7 +110,7 @@ public class HttpRequestUtil {
 	}
 
 	public void postData(String param) {
-		// ·¢ËÍÇëÇó²ÎÊı
+
 		System.out.println("param : "+ param);
 		try {
 			out.write(param.getBytes());
@@ -123,7 +119,6 @@ public class HttpRequestUtil {
 			e1.printStackTrace();
 			close();
 		}
-		// flushÊä³öÁ÷µÄ»º³å
 		//out.flush();
 	/*	String line;
 		StringBuilder result = new StringBuilder();
@@ -160,17 +155,17 @@ public class HttpRequestUtil {
 //	/*private static HttpURLConnection conn = null;
 //
 //	public String sendPost(String url, String param) {
-//		System.out.println("·¢ËÍµÄÄÚÈİ:" + param);
+//		System.out.println("ï¿½ï¿½ï¿½Íµï¿½ï¿½ï¿½ï¿½ï¿½:" + param);
 //		PrintWriter out = null;
 //		BufferedReader in = null;
 //		StringBuilder result = new StringBuilder();
 //		try {
 //			URL realUrl = new URL(url);
-//			// ´ò¿ªºÍURLÖ®¼äµÄÁ¬½Ó
+//			// ï¿½ò¿ªºï¿½URLÖ®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //			if (conn == null) {
 //				conn = (HttpURLConnection) realUrl.openConnection();
 //			}
-//			// ÉèÖÃÍ¨ÓÃµÄÇëÇóÊôĞÔ
+//			// ï¿½ï¿½ï¿½ï¿½Í¨ï¿½Ãµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //			conn.setRequestProperty("accept", "*/*");
 //			conn.setRequestProperty("connection", "Keep-Alive");
 //			conn.setRequestProperty("user-agent",
@@ -178,19 +173,19 @@ public class HttpRequestUtil {
 //			conn.setRequestProperty("Accept-Charset", "UTF-8");
 //			conn.setRequestProperty("contentType", "UTF-8");
 //			conn.setRequestMethod("POST");
-//			// ·¢ËÍPOSTÇëÇó±ØĞëÉèÖÃÈçÏÂÁ½ĞĞ
+//			// ï¿½ï¿½ï¿½ï¿½POSTï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //			conn.setDoOutput(true);
 //			conn.setDoInput(true);
 //
 //			// URLConnection conn = realUrl.openConnection();
 //
-//			// »ñÈ¡URLConnection¶ÔÏó¶ÔÓ¦µÄÊä³öÁ÷
+//			// ï¿½ï¿½È¡URLConnectionï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //			out = new PrintWriter(conn.getOutputStream());
-//			// ·¢ËÍÇëÇó²ÎÊı
+//			// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //			out.print(param);
-//			// flushÊä³öÁ÷µÄ»º³å
+//			// flushï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä»ï¿½ï¿½ï¿½
 //			out.flush();
-//			// ¶¨ÒåBufferedReaderÊäÈëÁ÷À´¶ÁÈ¡URLµÄÏìÓ¦
+//			// ï¿½ï¿½ï¿½ï¿½BufferedReaderï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡URLï¿½ï¿½ï¿½ï¿½Ó¦
 //			in = new BufferedReader(
 //					new InputStreamReader(conn.getInputStream()));
 //			String line;
@@ -198,13 +193,13 @@ public class HttpRequestUtil {
 //				result.append(line);
 //			}
 //		} catch (Exception e) {
-//			System.out.println("·¢ËÍ POST ÇëÇó³öÏÖÒì³££¡" + e);
+//			System.out.println("ï¿½ï¿½ï¿½ï¿½ POST ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ì³£ï¿½ï¿½" + e);
 //			result = new StringBuilder(
 //					"{\"resCode\":\"1\",\"errCode\":\"1001\",\"resData\":\"\"}");
 //			e.printStackTrace();
-//			System.out.println("Ô¶³Ì·şÎñÎ´¿ªÆô!");
+//			System.out.println("Ô¶ï¿½Ì·ï¿½ï¿½ï¿½Î´ï¿½ï¿½ï¿½ï¿½!");
 //		}
-//		// Ê¹ÓÃfinally¿éÀ´¹Ø±ÕÊä³öÁ÷¡¢ÊäÈëÁ÷
+//		// Ê¹ï¿½ï¿½finallyï¿½ï¿½ï¿½ï¿½ï¿½Ø±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //		finally {
 //			try {
 //				if (out != null) {
