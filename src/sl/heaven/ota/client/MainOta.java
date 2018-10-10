@@ -21,29 +21,51 @@ import libs.espressif.net.EspHttpParams;
 public class MainOta {
     /**
      * @param args
-     * 需要从shell脚本中传入的参数
+     * 闇�瑕佷粠shell鑴氭湰涓紶鍏ョ殑鍙傛暟
      */
     public static int closeNum = 0;
     public static int isStopNum = 0;
+    public static int currentNum = 0;
+    public String failMacIds = "";
     static long startTime = 0;
     static long endTime = 0;
     private static ExecutorService singleThreadExecutor;
+    private static int rowNum = 50;
 
     public static void main(String[] args) {
         singleThreadExecutor = Executors.newSingleThreadExecutor();
-        // d8a01d648348
-        // d8a01d648450
-        // d8a01d648614
-        // d8a01d648ba4
+
         //103"d8a01d648450,d8a01d612a50","C:/Users/SL/Desktop/Honeywell_Sensor_v0.10.8.3.bin","109","d8a01d648ba4,d8a01d61294c"
-
         startTime = System.currentTimeMillis();
-
-        //四个设备同时升
-        String[] test = {"192.168.10.105", "192.168.10.103", "C:/Users/SL/Desktop/Honeywell_Sensor_v0.10.8.4.bin", "888888888888",
-                "d8a01d648450,d8a01d612a50", "192.168.10.110", "C:/Users/SL/Desktop/Honeywell_Sensor_v0.10.8.4.bin", "999999999999",
+        String[] test = {"192.168.10.105", "192.168.10.109", "C:/Users/SL/Desktop/Honeywell_Sensor_v0.10.9.2.bin", "888888888888",
+                "d8a01d648450,d8a01d612a50", "192.168.10.110", "C:/Users/SL/Desktop/Honeywell_Sensor_v0.10.9.2.bin", "999999999999",
                 "d8a01d648ba4,d8a01d61294c"};
-        // 需要将结果发送出去的ip
+
+
+        ParamBean paramBean = new ParamBean();
+        List<MeshBean> meshBeanList = new ArrayList<>();
+        paramBean.setServerIp(test[0]);
+
+        int num = test.length;
+        for (int i = 1; i < num; i++) {
+            MeshBean meshBean = new MeshBean();
+            String ip = test[i];
+            String path = test[i + 1];
+            String meshId = test[i + 2];
+            String[] updateOta = test[i + 3].split(",");
+            int row = (int) Math.ceil(updateOta.length / rowNum);
+
+
+            for (int j = 0; j < row; j++) {
+
+            }
+            meshBean.setMeshTargetIp(ip);
+            meshBean.setFilePath(path);
+            meshBean.setMeshId(meshId);
+            i = i + 3;
+        }
+
+
         final String mSendIp = test[0];
         closeNum = 0;
         isStopNum = 0;
@@ -55,21 +77,13 @@ public class MainOta {
             final String meshId = test[i + 2];
             final String[] updateOta = test[i + 3].split(",");
             i = i + 3;
-//			new Thread() {
-//				public void run() {
-//					try {
+
             updateData(mSendIp, ip, path, meshId, updateOta);
-//						sleep(1000);
-//					} catch (InterruptedException e) {
-//						// TODO Auto-generated catch block
-//						e.printStackTrace();
-//					}
-//				}
-//			}.start();
         }
     }
 
     public static void updateData(final String sendIp, String ip, String path, final String meshId, final String[] data) {
+
 
         String mCurrentMac = "";
         String mCurrentProgress = "";
@@ -85,14 +99,13 @@ public class MainOta {
             macInfo.setmMac(mac);
             macList.add(macInfo);
         }
-        System.out.println("初始得macList的值：" + macList.size());
         devices = new LinkedList<IEspDevice>();
         for (int i = 0; i < macList.size(); i++) {
             MeshNode node = new MeshNode();
             MacInfo macInfo = macList.get(i);
             node.setMac(macInfo.getmMac());
             node.setHost(macInfo.getmIp());
-            IEspDevice device = EspDeviceFactory.parseMeshNode(node); // 新建实例
+            IEspDevice device = EspDeviceFactory.parseMeshNode(node); // 鏂板缓瀹炰緥
             device.setProtocolPort(80);
             device.setProtocol("http");
             device.setMeshId(meshId);
@@ -100,99 +113,75 @@ public class MainOta {
         }
         // C:/Users/SL/Desktop/Honeywell_Sensor.bin
         File bin = new File(path); // path
-        // 设置升级文件路径
-        EspOTAClient otaClient = new EspOTAClient(bin, devices,
-                new EspOTAClient.OTACallback() {
-                    @Override
-                    public void onOTAPrepare(EspOTAClient client) {
+        EspOTAClient otaClient = new EspOTAClient(bin, devices, new EspOTAClient.OTACallback() {
+            @Override
+            public void onOTAPrepare(EspOTAClient client) {
+                System.out.println("鍗囩骇鍓嶇殑鍑嗗client=" + client);
+            }
 
-                        System.out.println("升级前的准备client=" + client);
+            @Override
+            public void onOTAProgressUpdate(EspOTAClient client, List<EspOTAClient.OTAProgress> progressList) {
+                for (EspOTAClient.OTAProgress otaProgress : progressList) {
+                    IEspDevice device = otaProgress.getDevice();
+                    String mMeshId = device.getMeshId();
+                    String mCurrentMac = device.getMac();
+                    int progress = otaProgress.getProgress();
+                    String message = otaProgress.getMessage();
+                    String sendData = mMeshId + "-" + progress;
+                    singleThreadExecutor.execute(new DataRunnable("http://" + sendIp + ":3000/api/ota/alter/progress", sendData));
+                    System.out.println(mCurrentMac + " -------- progress info ------- " + sendData);
+                }
+            }
+
+            @Override
+            public void onOTAResult(EspOTAClient client, List<IEspDevice> completeDevices) {
+
+                isStopNum++;
+                String mMeshId = meshId;
+                for (IEspDevice device : completeDevices) {
+                    MacInfo macInfo = new MacInfo();
+                    String mac = device.getMac();
+                    macInfo.setmMac(device.getMac());
+                    System.out.print("Updata Success Device:" + mac);
+                    successList.add(macInfo);
+                }
+                List<MacInfo> failList = getFailerDevice(macList, successList);
+                System.out.println("-------->  Update Fault Device Size:" + failList.size());
+                String failMac = mMeshId + ":";
+                System.out.println("-------->  The Size Of Success:" + successList.size());
+                for (int i = 0; i < failList.size(); i++) {
+                    MacInfo macInfo = new MacInfo();
+                    macInfo = failList.get(i);
+                    failMac = failMac + "-" + macInfo.getmMac();
+                    System.out.println("The Device Of Update Fault Mac:" + macInfo.getmMac());
+                }
+                currentNum++;
+
+                int ceil = (int) Math.ceil(data.length / rowNum);
+                if (currentNum == ceil) {
+                    singleThreadExecutor.execute(new DataRunnable("http://" + sendIp + ":3000/api/ota/alter/state", failMac));
+                    EspHttpParams params = new EspHttpParams();
+                    params.setTryCount(3);
+                    DeviceUtil.delayRequestRetry(completeDevices, "ota_reboot", params);
+                    client.close();
+                    endTime = System.currentTimeMillis();
+                    long time = endTime - startTime;
+                    System.out.println("------------------------>The Update Time Of Use:" + time / 1000 + "S!");
+                    System.out.println("The Process Is Already Stop!...");
+                    if (currentNum < ceil) {
+
                     }
+                } else {
 
-                    @Override
-                    public void onOTAProgressUpdate(EspOTAClient client, List<EspOTAClient.OTAProgress> progressList) {
+                }
 
-                        // OTA 升级过程中回调
-                        for (EspOTAClient.OTAProgress otaProgress : progressList) {
-                            IEspDevice device = otaProgress.getDevice();
-                            String mMeshId = device.getMeshId();
-                            String mCurrentMac = device.getMac();
-                            int progress = otaProgress.getProgress();
-                            String message = otaProgress.getMessage();
-//							System.out
-//									.println("升级过程中的设备:mCurrentMac:"
-//											+ mCurrentMac + "progress="
-//											+ progress + "");
-                            String sendData = mMeshId + "-" + progress;
-
-                            //httpRequestUtil.sendPost("http://" + sendIp+ ":3000/api/ota/alter/progress", sendData);
-                            System.out.println("00000000000000000 :" + progress);
-
-                            singleThreadExecutor.execute(new DataRunnable("http://" + sendIp + ":3000/api/ota/alter/progress", sendData));
-                            System.out.println(mCurrentMac + "------------------>progressInfo" + sendData);
-                        }
-
-                    }
-
-                    @Override
-                    public void onOTAResult(EspOTAClient client, List<IEspDevice> completeDevices) {
-                        System.out.println("=========> close");
-                        endTime = System.currentTimeMillis();
-                        long time = endTime - startTime;
-                        System.out.println("------------------------>当前升级一共使用了" + time / 1000 + "秒!");
-
-                        // OTA 升级结束时回调
-                        // completeDevices 为升级成功的设备
-                        isStopNum++;
-                        String mMeshId = meshId;
-                        for (IEspDevice device : completeDevices) {
-                            MacInfo macInfo = new MacInfo();
-                            String mac = device.getMac();
-                            macInfo.setmMac(device.getMac());
-                            System.out.print("升级成功的设备有:" + mac);
-                            successList.add(macInfo);
-                        }
-                        // 通过比较获取升级失败的设备
-                        List<MacInfo> failList = getFailerDevice(macList,
-                                successList);
-                        System.out.println("升级失败的设备总量:" + failList.size());
-                        String failMac = mMeshId + ":";
-                        System.out.println("升级成功的设备数量:" + successList.size());
-                        System.out.println("总的设备数量:" + macList.size());
-
-                        for (int i = 0; i < failList.size(); i++) {
-                            MacInfo macInfo = new MacInfo();
-                            macInfo = failList.get(i);
-                            failMac = failMac + "-" + macInfo.getmMac();
-                            System.out.println("升级失败的设备有:" + macInfo.getmMac());
-                        }
-
-                        //	HttpRequestUtil httpRequestUtil = new HttpRequestUtil();
-                        singleThreadExecutor.execute(new DataRunnable("http://" + sendIp
-                                + ":3000/api/ota/alter/state", failMac));
-						/*httpRequestUtil.sendPost("http://" + sendIp
-								+ ":3000/api/ota/alter/state", failMac);*/
-                        System.out.println("最终发送给服务端的信息为:" + failMac);
-                        EspHttpParams params = new EspHttpParams();
-                        params.setTryCount(3);
-                        DeviceUtil.delayRequestRetry(completeDevices,
-                                "ota_reboot", params);
-                        if (closeNum == isStopNum) {
-                            client.close();
-                            System.out.println("程序执行完毕了...");
-                        }
-                    }
-                });
+            }
+        });
         otaClient.start();
-        System.out.println("==========> update "+ meshId);
+
+        System.out.println("==========> update " + meshId);
     }
 
-
-    /**
-     * @param allList     当前所有的设备集合
-     * @param successList 回调成功的设备集合
-     * @return
-     */
     private static List<MacInfo> getFailerDevice(List<MacInfo> allList,
                                                  List<MacInfo> successList) {
         MacInfo macAllInfo;
